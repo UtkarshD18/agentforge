@@ -1,0 +1,16 @@
+[project]
+name = "agentforge-providers"
+version = "0.1.0"
+description = "AgentForge Capability Providers Contract"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.5.0",
+    "agentforge-plugins",
+]
+
+[tool.uv.sources]
+agentforge-plugins = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

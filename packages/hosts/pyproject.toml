@@ -1,0 +1,12 @@
+[project]
+name = "agentforge-hosts"
+version = "0.1.0"
+description = "AgentForge Cross-App Host Extensions Connectors"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.5.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -1,0 +1,12 @@
+[project]
+name = "agentforge-scheduler"
+version = "0.1.0"
+description = "AgentForge Stateless DAG Task Scheduler"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.5.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

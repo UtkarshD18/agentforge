@@ -1,0 +1,15 @@
+[project]
+name = "agentforge-runtime-engine"
+version = "0.1.0"
+description = "AgentForge Process Execution Runtime"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.5.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["agentforge_runtime_engine"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

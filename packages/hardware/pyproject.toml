@@ -1,0 +1,16 @@
+[project]
+name = "agentforge-hardware"
+version = "0.1.0"
+description = "AgentForge Hardware Abstraction Layer (HAL) using NVML"
+requires-python = ">=3.11"
+dependencies = [
+    "nvidia-ml-py>=12.535.133",
+    "agentforge-core",
+]
+
+[tool.uv.sources]
+agentforge-core = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

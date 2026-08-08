@@ -1,0 +1,17 @@
+[project]
+name = "agentforge-agents"
+version = "0.1.0"
+description = "AgentForge Agent Runtime & Collaborating Agents"
+requires-python = ">=3.11"
+dependencies = [
+    "agentforge-core",
+    "agentforge-sdk",
+]
+
+[tool.uv.sources]
+agentforge-core = { workspace = true }
+agentforge-sdk = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

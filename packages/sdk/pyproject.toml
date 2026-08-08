@@ -1,0 +1,15 @@
+[project]
+name = "agentforge-sdk"
+version = "0.1.0"
+description = "AgentForge Plugin Developer SDK"
+requires-python = ">=3.11"
+dependencies = [
+    "agentforge-core",
+]
+
+[tool.uv.sources]
+agentforge-core = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

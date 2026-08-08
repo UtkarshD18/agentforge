@@ -1,0 +1,23 @@
+[project]
+name = "agentforge-monorepo"
+version = "0.1.0"
+description = "AgentForge OS v1.0 Monorepo Workspace"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+workspace = { members = ["apps/*", "packages/*"] }
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "black>=24.0.0",
+    "ruff>=0.3.0",
+    "mypy>=1.9.0",
+    "httpx2>=2.9.1",
+    "httpcore2>=2.9.1",
+    "PySide6>=6.6.0",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "resolve: marks tests as DaVinci Resolve integration tests (skipped if offline)"
+]
