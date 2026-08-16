@@ -5,7 +5,13 @@ description = "AgentForge Execution Orchestrator"
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.5.0",
+    "agentforge-core",
+    "agentforge-resources",
 ]
+
+[tool.uv.sources]
+agentforge-core = { workspace = true }
+agentforge-resources = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

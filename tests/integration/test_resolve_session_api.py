@@ -8,7 +8,7 @@ def test_resolve_session_synchronization() -> None:
     """
     Test that the daemon host session POST and GET endpoints process Resolve snapshot metrics correctly.
     """
-    daemon_url = "http://localhost:8080/api/v1/hosts/resolve/session"
+    daemon_url = "http://127.0.0.1:8888/api/v1/hosts/resolve/session"
     
     # Test payload mimicking Resolve UIManager panel output
     payload = {

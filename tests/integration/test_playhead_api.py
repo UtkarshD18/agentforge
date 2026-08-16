@@ -13,8 +13,21 @@ def test_resolve_playhead_navigation(resolve_connection) -> None:
     # Record current playhead to restore original state
     original_timecode = timeline.GetCurrentTimecode()
 
-    # Set playhead to 00:00:12:15
-    timecode = "00:00:12:15"
+    # Calculate target timecode (+10s relative to start frame)
+    fps_val = timeline.GetSetting('timelineFrameRate')
+    fps = float(fps_val) if fps_val else 30.0
+    start_f = timeline.GetStartFrame()
+    target_f = start_f + int(10 * fps)
+
+    def frame_to_timecode(frame_num: int, rate: float) -> str:
+        total_seconds = int(frame_num // rate)
+        frames = int(frame_num % rate)
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}:{frames:02d}"
+
+    timecode = frame_to_timecode(target_f, fps)
     timeline.SetCurrentTimecode(timecode)
     
     # Verify change

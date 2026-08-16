@@ -651,3 +651,117 @@ class SurrealDBGraphRepository(GraphRepository):
         except Exception:
             return []
         return []
+
+class TelemetryRepository(ABC):
+    """
+    Abstract repository for recording model execution performance telemetry.
+    """
+    @abstractmethod
+    def log_telemetry(self, telemetry: Dict[str, Any]) -> None:
+        pass
+
+    @abstractmethod
+    def get_telemetry(self, model_name: Optional[str] = None) -> List[Dict[str, Any]]:
+        pass
+
+
+class SQLiteTelemetryRepository(TelemetryRepository):
+    """
+    Thread-safe SQLite implementation of TelemetryRepository.
+    """
+    def __init__(self, db_path: str = ":memory:") -> None:
+        self.db_path = db_path
+        self._lock = threading.Lock()
+        self._shared_conn = None
+        if self.db_path == ":memory:":
+            self._shared_conn = sqlite3.connect(":memory:", check_same_thread=False)
+            self._shared_conn.row_factory = sqlite3.Row
+        self._initialize_db()
+
+    def _get_connection(self) -> sqlite3.Connection:
+        if self._shared_conn:
+            return self._shared_conn
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        return conn
+
+    def _close_connection(self, conn: sqlite3.Connection) -> None:
+        if conn is not self._shared_conn:
+            conn.close()
+
+    def _initialize_db(self) -> None:
+        with self._lock:
+            conn = self._get_connection()
+            try:
+                with conn:
+                    conn.execute("""
+                        CREATE TABLE IF NOT EXISTS telemetry_log (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            model TEXT NOT NULL,
+                            strategy TEXT NOT NULL,
+                            vram_before INTEGER,
+                            vram_peak INTEGER,
+                            vram_after INTEGER,
+                            ram_peak INTEGER,
+                            load_time REAL,
+                            inference_time REAL,
+                            tokens_per_second REAL,
+                            input_tokens INTEGER,
+                            output_tokens INTEGER,
+                            success INTEGER,
+                            quality_score REAL,
+                            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        );
+                    """)
+            finally:
+                self._close_connection(conn)
+
+    def log_telemetry(self, telemetry: Dict[str, Any]) -> None:
+        with self._lock:
+            conn = self._get_connection()
+            try:
+                with conn:
+                    conn.execute(
+                        """
+                        INSERT INTO telemetry_log (
+                            model, strategy, vram_before, vram_peak, vram_after,
+                            ram_peak, load_time, inference_time, tokens_per_second,
+                            input_tokens, output_tokens, success, quality_score
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            telemetry.get("model"),
+                            telemetry.get("strategy"),
+                            telemetry.get("vram_before", 0),
+                            telemetry.get("vram_peak", 0),
+                            telemetry.get("vram_after", 0),
+                            telemetry.get("ram_peak", 0),
+                            telemetry.get("load_time", 0.0),
+                            telemetry.get("inference_time", 0.0),
+                            telemetry.get("tokens_per_second", 0.0),
+                            telemetry.get("input_tokens", 0),
+                            telemetry.get("output_tokens", 0),
+                            1 if telemetry.get("success", True) else 0,
+                            telemetry.get("quality_score", 0.0)
+                        )
+                    )
+            finally:
+                self._close_connection(conn)
+
+    def get_telemetry(self, model_name: Optional[str] = None) -> List[Dict[str, Any]]:
+        with self._lock:
+            conn = self._get_connection()
+            try:
+                cursor = conn.cursor()
+                if model_name:
+                    cursor.execute("SELECT * FROM telemetry_log WHERE model = ? ORDER BY timestamp DESC", (model_name,))
+                else:
+                    cursor.execute("SELECT * FROM telemetry_log ORDER BY timestamp DESC")
+                
+                rows = cursor.fetchall()
+                results = []
+                for row in rows:
+                    results.append(dict(row))
+                return results
+            finally:
+                self._close_connection(conn)

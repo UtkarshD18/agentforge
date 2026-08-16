@@ -177,3 +177,17 @@ class ExecutionFabric:
                         best_candidate = (provider, m.model_name)
 
         return best_candidate
+
+class AudioTranscriptSegment(BaseModel):
+    start: float
+    end: float
+    text: str
+    confidence: float
+
+class AudioTranscriptionRequest(ExecutionRequest):
+    task_type: str = "audio_transcription"
+    audio_path: str
+
+class AudioTranscriptionResponse(ExecutionResponse):
+    text: str
+    segments: List[AudioTranscriptSegment]

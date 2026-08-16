@@ -104,7 +104,7 @@ def test_capability_kernel_vertical_slice() -> None:
     project_store.set_project("proj-123", proj.model_dump())
 
     # D. Setup Resources
-    resource_mgr = ResourceManager(total_vram_bytes=8 * 1024 * 1024 * 1024, total_ram_bytes=16 * 1024 * 1024 * 1024)
+    resource_mgr = ResourceManager(safety_ceiling_bytes=6 * 1024 * 1024 * 1024)
     model_mgr = ModelManager(resource_mgr)
     memory_planner = MemoryPlanner(resource_mgr, model_mgr)
 

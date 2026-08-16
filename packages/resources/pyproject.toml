@@ -5,7 +5,11 @@ description = "AgentForge Hardware Resource & Memory Manager"
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.5.0",
+    "agentforge-hardware",
 ]
+
+[tool.uv.sources]
+agentforge-hardware = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

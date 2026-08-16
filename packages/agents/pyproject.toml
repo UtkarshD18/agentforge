@@ -6,11 +6,17 @@ requires-python = ">=3.11"
 dependencies = [
     "agentforge-core",
     "agentforge-sdk",
+    "agentforge-video",
+    "agentforge-providers",
+    "agentforge-resources",
 ]
 
 [tool.uv.sources]
 agentforge-core = { workspace = true }
 agentforge-sdk = { workspace = true }
+agentforge-video = { workspace = true }
+agentforge-providers = { workspace = true }
+agentforge-resources = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

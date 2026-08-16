@@ -52,7 +52,9 @@ def test_video_pipeline(tmp_path):
     assert "transcript_uri" in report
 
 def test_resolve_adapter():
+    import time
     adapter = ResolveAdapter()
     assert adapter.initialize() is True
     clips = [{"path": "/path/clip.mp4", "start": 0.0, "end": 5.0}]
-    assert adapter.create_timeline_from_clips("Demo Timeline", clips) is True
+    timeline_name = f"Demo Timeline {int(time.time())}"
+    assert adapter.create_timeline_from_clips(timeline_name, clips) is True

@@ -1,6 +1,7 @@
 from .manager import ResourceManager, HardwareMetrics
 from .models import ModelManager, ModelLifecycleState
-from .planner import MemoryPlanner, Reservation
+from .planner import MemoryPlanner, Reservation, ResourceAcquisitionError, ReservationContext
+from .strategy import StrategySelector, InferenceStrategy, InferenceTelemetry, ModelCapabilityProfile
 
 __all__ = [
     "ResourceManager",
@@ -9,4 +10,10 @@ __all__ = [
     "ModelLifecycleState",
     "MemoryPlanner",
     "Reservation",
+    "ResourceAcquisitionError",
+    "ReservationContext",
+    "StrategySelector",
+    "InferenceStrategy",
+    "InferenceTelemetry",
+    "ModelCapabilityProfile",
 ]

@@ -1,5 +1,6 @@
-from .orchestrator import ExecutionOrchestrator
+from .orchestrator import ExecutionOrchestrator, HierarchicalAnalyzer
 
 __all__ = [
     "ExecutionOrchestrator",
+    "HierarchicalAnalyzer",
 ]

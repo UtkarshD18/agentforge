@@ -6,6 +6,8 @@ requires-python = ">=3.11"
 dependencies = [
     "agentforge-core",
     "agentforge-hardware",
+    "opencv-python-headless>=4.8.0",
+    "numpy>=1.24.0",
 ]
 
 [tool.uv.sources]

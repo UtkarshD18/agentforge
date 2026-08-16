@@ -10,14 +10,18 @@ def test_resolve_marker_lifecycle(resolve_connection) -> None:
     timeline = current_project.GetCurrentTimeline()
     assert timeline is not None, "No active timeline found."
 
-    # Add Marker at frame ID 375
-    frame_id = 375
+    # Dynamically calculate a valid frame_id within the timeline range
+    start_f = timeline.GetStartFrame()
+    end_f = timeline.GetEndFrame()
+    duration = end_f - start_f
+    frame_id = min(50, max(1, duration - 10))
+    
     timeline.AddMarker(
-        frameId=frame_id,
-        color="Green",
-        name="AgentForge Test",
-        note="Whip-pan camera shift transition location.",
-        duration=1
+        frame_id,
+        "Green",
+        "AgentForge Test",
+        "Whip-pan camera shift transition location.",
+        1
     )
     
     # Read back markers and verify

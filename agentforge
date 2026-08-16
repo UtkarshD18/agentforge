@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+import sys
+import os
+import argparse
+
+# Setup package import paths
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "packages/core")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "packages/providers")))
+
+def main():
+    parser = argparse.ArgumentParser(description="AgentForge OS Diagnostics")
+    parser.add_argument("command", choices=["doctor"], help="Command to execute")
+    parser.add_argument("--gemini", action="store_true", help="Run Gemini AI service check")
+    
+    args = parser.parse_args()
+    
+    if args.command == "doctor":
+        if args.gemini:
+            run_gemini_diagnostics()
+        else:
+            parser.print_help()
+
+def run_gemini_diagnostics():
+    api_key = os.getenv("GEMINI_API_KEY")
+    print("==================================================")
+    print("AGENTFORGE GEMINI API DIAGNOSTICS")
+    print("==================================================")
+    print(f"GEMINI_API_KEY env: {'PRESENT' if api_key else 'MISSING'}")
+    
+    if not api_key:
+        print("\nAI ENGINE STATUS:")
+        print("  Provider: Google Gemini")
+        print("  Model: gemini-2.5-flash")
+        print("  API Key: MISSING")
+        print("  API Request: FAILED")
+        print("  Error Detail: GEMINI_API_KEY is not defined in the process environment.")
+        sys.exit(1)
+        
+    try:
+        from agentforge_providers.google.provider import GoogleProvider
+        from agentforge_core.fabric import AIRequest, AIMessage
+        import time
+        
+        print("Instantiating GoogleProvider...")
+        provider = GoogleProvider()
+        
+        print("Sending test request to gemini-2.5-flash...")
+        req = AIRequest(
+            messages=[AIMessage(role="user", content="Ping. Respond with a JSON object: {\"status\": \"ok\"}")],
+            model="gemini-2.5-flash"
+        )
+        
+        start = time.time()
+        res = provider.execute(req)
+        latency = time.time() - start
+        
+        # Check if the output returned mock content or real response
+        if "[Google Gemini Mock Mode]" in res.text:
+            print("\nAI ENGINE STATUS:")
+            print("  Provider: Google Gemini")
+            print("  Model: gemini-2.5-flash")
+            print("  API Key: PRESENT (Adapter configuration skipped, using fallback mock mode)")
+            print("  API Request: FAILED")
+            sys.exit(1)
+            
+        print("\nAI ENGINE STATUS:")
+        print("  Provider: Google Gemini")
+        print(f"  Model: {res.model_name}")
+        print("  API Key: PRESENT")
+        print("  API Request: SUCCESS")
+        print(f"  Latency: {latency:.2f} seconds")
+        print(f"  Response: {res.text.strip()}")
+        
+    except Exception as e:
+        print("\nAI ENGINE STATUS:")
+        print("  Provider: Google Gemini")
+        print("  Model: gemini-2.5-flash")
+        print("  API Key: PRESENT")
+        print("  API Request: FAILED")
+        print(f"  Error Detail: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()

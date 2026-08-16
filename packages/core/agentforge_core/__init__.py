@@ -4,7 +4,7 @@ from .storage import (
     Entity, Edge, GraphRepository, EventRepository, ArtifactMetadata, ArtifactRepository,
     BlobRepository, SettingsRepository, VectorRepository, SQLiteGraphRepository, SQLiteEventRepository,
     SQLiteArtifactRepository, LocalFileSystemBlobRepository, SQLiteSettingsRepository, InMemoryVectorRepository,
-    SurrealDBGraphRepository
+    SurrealDBGraphRepository, TelemetryRepository, SQLiteTelemetryRepository
 )
 from .di import Container, get_container
 from .workflow import (
@@ -13,5 +13,5 @@ from .workflow import (
 )
 from .scheduler import Scheduler
 from .fabric import ModelConfig, CapabilityProvider, ExecutionFabric, AIMessage, AIRequest, AIResponseUsage, AIResponse, ExecutionRequest, ExecutionResponse, ExecutionTelemetry
-from .mediagraph import MediaNode, MediaNodeProvenance, TemporalNode, SpatialNode, SemanticNode, MediaGraphRepository, GraphBuilder
+from .mediagraph import MediaNode, MediaNodeProvenance, TemporalNode, SpatialNode, SemanticNode, MediaGraphRepository, GraphBuilder, ContextBudgeter, MediaAnalysisCache
 from .artifacts import ArtifactManager

@@ -174,3 +174,114 @@ class GraphBuilder:
             score=score,
             metadata=metadata or {}
         )
+
+    @staticmethod
+    def build_transcript_node(
+        clip_name: str,
+        start_seconds: float,
+        end_seconds: float,
+        text: str,
+        confidence: float,
+        creator: str,
+        revision: int = 1,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> TemporalNode:
+        prov = MediaNodeProvenance(created_by=creator, confidence=confidence, revision=revision)
+        safe_clip = clip_name.replace(".", "_")
+        return TemporalNode(
+            uri=f"node://clip/{safe_clip}/transcript/{int(start_seconds * 100)}?rev={revision}",
+            provenance=prov,
+            start_seconds=start_seconds,
+            end_seconds=end_seconds,
+            metadata={
+                "clip_name": clip_name,
+                "text": text,
+                **(metadata or {})
+            }
+        )
+
+import hashlib
+import json
+
+class ContextBudgeter:
+    """
+    Manages modality-aware context budgets (tokens, images, output limits)
+    for model prompt generation, using a Retrieve -> Rank -> Compress pipeline.
+    """
+    def __init__(self, text_token_limit: int = 2000, max_images: int = 5) -> None:
+        self.text_token_limit = text_token_limit
+        self.max_images = max_images
+
+    def compile_budgeted_context(self, nodes: List[MediaNode]) -> Dict[str, Any]:
+        # 1. Rank nodes by confidence or relevance score
+        ranked_nodes = sorted(
+            nodes,
+            key=lambda x: x.provenance.confidence if hasattr(x, "provenance") else 1.0,
+            reverse=True
+        )
+        
+        compiled_text = []
+        text_tokens_used = 0
+        images_included = []
+        
+        # 2. Add elements under budget limits
+        for node in ranked_nodes:
+            # Check for image/visual nodes
+            if node.type == "spatial_node" and len(images_included) < self.max_images:
+                img_path = node.metadata.get("frame_path")
+                if img_path:
+                    images_included.append(img_path)
+            
+            # Rough token estimate (4 characters = 1 token average)
+            node_desc = f"{node.type} | {node.uri} | {json.dumps(node.metadata)}"
+            node_tokens = len(node_desc) // 4
+            
+            if text_tokens_used + node_tokens <= self.text_token_limit:
+                compiled_text.append(node_desc)
+                text_tokens_used += node_tokens
+                
+        return {
+            "text": "\n".join(compiled_text),
+            "tokens_used": text_tokens_used,
+            "images": images_included
+        }
+
+class MediaAnalysisCache:
+    """
+    Multi-level cache (L1, L2, L3) key builder and resolver.
+    """
+    def __init__(self, graph_repo: MediaGraphRepository) -> None:
+        self.graph_repo = graph_repo
+
+    def build_cache_key(
+        self,
+        media_hash: str,
+        analysis_type: str,
+        model_name: str,
+        model_version: str,
+        params: Dict[str, Any],
+        analyzer_version: str = "1.0"
+    ) -> str:
+        # Include analyzer_version and params in invalidation hash
+        params_str = json.dumps(params, sort_keys=True)
+        combined = f"{media_hash}:{analysis_type}:{model_name}:{model_version}:{params_str}:{analyzer_version}"
+        h = hashlib.sha256(combined.encode("utf-8")).hexdigest()[:24]
+        return f"cache://{analysis_type}/{h}"
+
+    def get_cached_result(self, cache_key: str) -> Optional[Dict[str, Any]]:
+        node = self.graph_repo.get_node(cache_key)
+        if node:
+            return node.metadata.get("result")
+        return None
+
+    def save_cached_result(self, media_graph_uri: str, cache_key: str, tier: str, result: Any) -> None:
+        prov = MediaNodeProvenance(created_by=f"cache_tier_{tier.lower()}", confidence=1.0)
+        node = SemanticNode(
+            uri=cache_key,
+            provenance=prov,
+            label="cache_item",
+            score=1.0,
+            metadata={"tier": tier, "result": result}
+        )
+        self.graph_repo.save_node(media_graph_uri, node)
+
